@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+    <h2>Bem-vindo, {{ user_info.name }}</h2>
+    <p>ID: {{ user_info.id }}</p>
+    <p>Nome: {{ user_info.name }}</p>
+    <p>Gênero: {{ user_info.gender }}</p>
+    <p>Data de Entrada: {{ user_info.joined_at|date:"d/m/Y" }}</p>
+    <p>Foto: <img src="{{ user_info.picture }}" alt="Foto do Usuário"></p>
+</body>
+</html>
