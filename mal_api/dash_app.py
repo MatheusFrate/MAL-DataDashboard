@@ -119,38 +119,41 @@ if 'df' in st.session_state:
 
     # endregion
 
-    # Criação de colunas
-    card1, card2, card3, card4, card5, card6 = st.columns(6)
-    card7, card8 = st.columns(2)
-    st.markdown("---")
-    col1, col2 = st.columns(2)
-    st.markdown("---")
-    col3, col4 = st.columns(2)
-    st.markdown("---")
-    col5, col6 = st.columns(2)
-    st.markdown("---")
-    col7, card9, col8 = st.columns(3)
-    st.markdown("---")
-    col9 = st.container()
-    st.markdown("---")
-    col10 = st.container()
+    #  region Criação de colunas
+    st.header('Dados')
+    total_anime, animes_avaliados, nota_media, nota_maxima, nota_minima, nota_mediana = st.columns(6)
+    episodios_assistidos, card8 = st.columns(2)
     st.markdown("---")
 
+    st.header('Gráficos')
+    graph_serie_episodio_nota,  graph_series_data_conclusao = st.columns(2)
+    st.markdown("---")
+    graph_series_tipo, graph_nota_tipo  = st.columns(2)
+    st.markdown("---")
+    graph_series_status, graph_series_genero  = st.columns(2)
+    st.markdown("---")
+    graph_tempo_nota, card_tempo_gasto_total, graph_serie_nota  = st.columns([3,1,3]) #isso é um ajuste de proporção - o card tem que ser menor
+    st.markdown("---")
+    graph_heatmap = st.container()
+    st.markdown("---")
+    graph_timeline = st.container()
+    st.markdown("---")
+    #endregion
 
     # region card
     total_series = df_filtered['series_title'].count()
     total_scored_series = df_filtered[df_filtered['my_score'] != 0]['series_title'].count()
     average_score = df_filtered[df_filtered['my_score'] != 0]['my_score'].mean()
-    card1.metric("Total de animes", total_series)
-    card2.metric("Animes Avaliadas", total_scored_series)
-    card3.metric("Nota Média", round(average_score, 2) if not pd.isnull(average_score) else 'Sem dados')
-    card4.metric("Nota Máxima", df_filtered['my_score'].max() if not pd.isnull(average_score) else 'Sem dados')
-    card5.metric("Nota Mínima", df_filtered[df_filtered['my_score'] != 0]['my_score'].min() if not pd.isnull(average_score) else 'Sem dados')
-    card6.metric("Nota Mediana", df_filtered['my_score'].median() if not pd.isnull(average_score) else 'Sem dados')
-    card7.metric("episódios assistidos", df_filtered['num_watched_episodes'].sum())
+    total_anime.metric("Total de animes", total_series)
+    animes_avaliados.metric("Animes Avaliadas", total_scored_series)
+    nota_media.metric("Nota Média", round(average_score, 2) if not pd.isnull(average_score) else 'Sem dados')
+    nota_maxima.metric("Nota Máxima", df_filtered['my_score'].max() if not pd.isnull(average_score) else 'Sem dados')
+    nota_minima.metric("Nota Mínima", df_filtered[df_filtered['my_score'] != 0]['my_score'].min() if not pd.isnull(average_score) else 'Sem dados')
+    nota_mediana.metric("Nota Mediana", df_filtered['my_score'].median() if not pd.isnull(average_score) else 'Sem dados')
+    episodios_assistidos.metric("episódios assistidos", df_filtered['num_watched_episodes'].sum())
     # endregion
 
-    #region primeiro Gráfico 
+    #region gráfico de barras da quantidade de séries por Nota
     df_group_score = df_filtered.groupby('my_score', as_index=False)['series_title'].count()
     fig_score = go.Figure()
     fig_score.add_trace(go.Bar(
@@ -174,11 +177,11 @@ if 'df' in st.session_state:
             showarrow=False,
             font=dict(size=20)
         )
-    col1.plotly_chart(fig_score, use_container_width=True)
+    graph_serie_nota.plotly_chart(fig_score, use_container_width=True)
 
     #endregion
 
-    #region segundo Gráfico
+    #region gráfico de barras da quantidade de series por faixa de episódios e a media de notas por faixa
     df_group_episodes = df_filtered.groupby('episode_range', as_index=False)['series_title'].count()
     df_avg_score_by_episodes = df_filtered[df_filtered['my_score'] != 0].groupby('episode_range', as_index=False)['my_score'].mean()
 
@@ -224,10 +227,10 @@ if 'df' in st.session_state:
             showarrow=False,
             font=dict(size=20)
         )
-    col2.plotly_chart(fig_episode_range, use_container_width=True)
+    graph_serie_episodio_nota.plotly_chart(fig_episode_range, use_container_width=True)
     #endregion
 
-    #region terceiro Gráfico
+    #region gráfico de pizza de quantidade de série por tipo
     df_series_by_type = df_filtered.groupby('series_type')['series_title'].count()
 
     fig_series_by_type = px.pie(df_series_by_type, values='series_title', names=df_series_by_type.index, title='Quantidade de Séries por Tipo')
@@ -239,10 +242,10 @@ if 'df' in st.session_state:
             showarrow=False,
             font=dict(size=20)
         )
-    col3.plotly_chart(fig_series_by_type, use_container_width=True)
+    graph_series_tipo.plotly_chart(fig_series_by_type, use_container_width=True)
     #endregion
 
-    #region quarto Gráfico 
+    #region timeline de quantidade de series assistidas por ano e média das notas por ano 
     df_series_by_year = df_filtered.groupby(df_filtered['my_finish_date'].dt.year)['series_title'].count()
     df_avg_score_by_year = df_filtered[df_filtered['my_score'] != 0].groupby(df_filtered['my_finish_date'].dt.year)['my_score'].mean()
 
@@ -279,10 +282,10 @@ if 'df' in st.session_state:
             showarrow=False,
             font=dict(size=20)
         )
-    col4.plotly_chart(fig_series_by_date, use_container_width=True)
+    graph_series_data_conclusao.plotly_chart(fig_series_by_date, use_container_width=True)
     #endregion
 
-    #region quinto Gráfico
+    #region gráfico donut de quantidade de series por status
     df_series_status = df_filtered.groupby('my_status')['series_title'].count()
     fig_series_by_status = px.pie(
         df_series_status,
@@ -297,10 +300,10 @@ if 'df' in st.session_state:
             showarrow=False,
             font=dict(size=20)
         )
-    col5.plotly_chart(fig_series_by_status, use_container_width=True)
+    graph_series_status.plotly_chart(fig_series_by_status, use_container_width=True)
     #endregion
 
-    #region sexto Gráfico
+    #region gráfico de barras de média de notas por tipo de série
     df_avg_score_by_type = df_filtered[df_filtered['my_score'] != 0].groupby('series_type', as_index=False)['my_score'].mean()
     fig_date = px.bar(df_avg_score_by_type, x='series_type', y='my_score', title='Média de Nota por Tipo de Série')
     fig_date.update_layout(
@@ -316,11 +319,11 @@ if 'df' in st.session_state:
             showarrow=False,
             font=dict(size=20)
         )
-    col6.plotly_chart(fig_date, use_container_width=True)
+    graph_nota_tipo.plotly_chart(fig_date, use_container_width=True)
     #endregion
     
-    #region sétimo gráfico e card 9
-    df_group_score = df_filtered
+    #region gráfico de barras do tempo gasto por nota e card 9 - tempo total gasto assistindo
+    df_group_score = df_filtered.copy()
     df_group_score['time_spent'] = (df_filtered['num_watched_episodes'] * df_filtered['average_episode_duration']) / 3600
     df_group_score = df_group_score.groupby('my_score', as_index=False)['time_spent'].sum()
     fig_score_by_time_spent = go.Figure()
@@ -350,12 +353,12 @@ if 'df' in st.session_state:
             showarrow=False,
             font=dict(size=20)
         )
-    col7.plotly_chart(fig_score_by_time_spent, use_container_width=True)
-    card9.metric("Tempo gasto assistindo", round(df_group_score['time_spent'].sum()/24, 2))
+    graph_tempo_nota.plotly_chart(fig_score_by_time_spent, use_container_width=True)
+    card_tempo_gasto_total.metric("Tempo gasto assistindo", round(df_group_score['time_spent'].sum()/24, 2))
 
     #endregion
 
-    #region oitavo gráfico
+    #region gráfico donut de generos mais assistidos
     df_series_genre = df_filtered.explode('genres')
     df_series_genre = df_series_genre.groupby('genres')['series_title'].count().sort_values(ascending=False).head(10)
 
@@ -372,11 +375,11 @@ if 'df' in st.session_state:
             showarrow=False,
             font=dict(size=20)
         )
-    col8.plotly_chart(fig_series_by_genre, use_container_width=True)
+    graph_series_genero.plotly_chart(fig_series_by_genre, use_container_width=True)
     #endregion
 
-    #region nono gráfico
-    df_completion_month = df_filtered
+    #region Heatmap de completed por mês
+    df_completion_month = df_filtered.copy()
 
     df_completion_month = df_completion_month.dropna(subset=['my_finish_date'])
 
@@ -436,29 +439,31 @@ if 'df' in st.session_state:
             categoryorder='array', 
             categoryarray=month_order
         )
-    col9.plotly_chart(heatmap, use_container_width=True)
+    graph_heatmap.plotly_chart(heatmap, use_container_width=True)
     #endregion
 
-    #region decimo gráfico - linha temporal - completed series
-    df_completion_month = df_filtered
+    #region linha temporal - completed series
+    df_completion_month = df_filtered.copy()
     df_completion_month['YearMonth'] = df_completion_month['my_finish_date'].dt.to_period('M')
+    df_completion_month['YearMonthGroup'] = df_completion_month['YearMonth'].apply( lambda x: 'Before 2015' if x.year <= 2015 else str(x) )
     df_completion_month = (
-        df_completion_month.groupby('YearMonth')
+        df_completion_month.groupby('YearMonthGroup')
         .size()
         .reset_index(name='count')
     )
-    df_completion_month = df_completion_month.sort_values('YearMonth')
+    df_completion_month = df_completion_month.sort_values('YearMonthGroup')
     df_completion_month['cumulative_count'] = df_completion_month['count'].cumsum()
-    df_completion_month['YearMonth'] = df_completion_month['YearMonth'].astype(str)
+    df_completion_month['YearMonthGroup'] = df_completion_month['YearMonthGroup'].astype(str)
 
     fig_timeline = go.Figure()
     fig_timeline.add_trace(go.Scatter(
-        x=df_completion_month['YearMonth'],
+        x=df_completion_month['YearMonthGroup'],
         y=df_completion_month['cumulative_count'],
         mode='lines+markers',
         name='Animes assistidos'
     ))
     unique_years = sorted(set(df_filtered['my_finish_date'].dt.year))
+    unique_years.insert(0, 'Before 2015')
 
     fig_timeline.update_layout(
         title='Timeline de animes assistidos',
@@ -466,8 +471,8 @@ if 'df' in st.session_state:
         yaxis_title='Quantidade acumulada de animes',
         xaxis=dict(
             tickmode='array',
-            tickvals=[f"{year}-01" for year in unique_years],
-            ticktext=[str(year) for year in unique_years],
+            tickvals=['Before 2015'] + [f"{year}-01" for year in unique_years],
+            ticktext=['Before 2015'] + [str(year) for year in unique_years],
             tickangle=-45
         ),
         yaxis=dict(
@@ -482,7 +487,7 @@ if 'df' in st.session_state:
             showarrow=False,
             font=dict(size=20)
         )
-    col10.plotly_chart(fig_timeline, use_container_width=True)
+    graph_timeline.plotly_chart(fig_timeline, use_container_width=True)
     #endregion
     
     st.header('Tabela de Animes')

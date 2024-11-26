@@ -11,7 +11,6 @@ router.register('anime_genre/', Anime_GenreViewSet)
 
 urlpatterns = [
     #padrão sistema
-    path('django_plotly_dash/', include('django_plotly_dash.urls')),
     path('redirect/', my_animelist_callback, name='redirect'),
     path('login/', myanimelist_login, name='login'),
     path('api/', include(router.urls)),

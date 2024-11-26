@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'mal_api',
-    'django_plotly_dash.apps.DjangoPlotlyDashConfig',
     'dpd_static_support',
     'channels',
     'channels_redis',
@@ -115,13 +114,6 @@ HANNEL_LAYERS = {
             "hosts": [("127.0.0.1", 6379)], 
         },
     },
-}
-
-PLOTLY_DASH = {
-    'ws_route': 'django_plotly_dash.routing.application',
-    'http_route': 'django_plotly_dash.views.DashAppView',
-    'prefix': '',  # Remover o prefixo /api
-    'serve_locally': True,
 }
 
 # Internationalization
