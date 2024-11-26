@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import AnimeViewSet, GenreViewSet, UserViewSet, User_AnimeViewSet, Anime_GenreViewSet, myanimelist_login, my_animelist_callback,get_difference, graphs, me, atualizar_dados, get_data_from_username
+from .views import AnimeViewSet, GenreViewSet, UserViewSet, User_AnimeViewSet, Anime_GenreViewSet, myanimelist_login, my_animelist_callback,get_difference, me, atualizar_dados, get_data_from_username
 
 router = DefaultRouter()
 router.register('anime/', AnimeViewSet)
@@ -17,7 +17,6 @@ urlpatterns = [
 
     #endpoints acessáveis
     path('me/', me, name='me'),
-    path('list/<str:username>/', graphs, name='list'), 
     path('get_data/<str:username>/', get_data_from_username, name='get_data_from_username'),
     path('atualizar_dados/<str:username>/', atualizar_dados, name='atualizar_dados'),
     path('get_difference/', get_difference, name='get_difference'),

@@ -93,7 +93,7 @@ class User_Anime(models.Model):
     score = models.FloatField(validators=[validate_score], null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICHES)
 
-    num_watched_episodes = models.IntegerField(null=True)
+    num_episodes_watched = models.IntegerField(null=True)
     start_date = models.DateField(null=True, blank=True)
     finish_date = models.DateField(null=True, blank=True)
 

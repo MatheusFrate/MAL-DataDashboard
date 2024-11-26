@@ -118,10 +118,6 @@ def me(request):
     user_info = get_user_info(user)
     return render(request, 'me.html', {'user_info': user_info})
 
-@login_required
-def graphs(request, username):
-    return render(request, 'teste.html')
-
 def atualizar_dados(request, username):
     print('Atualizando dados...', username)
     print('='*100)
@@ -134,7 +130,7 @@ def atualizar_dados(request, username):
             anime_id = int(anime['node']['id'])
             check_and_add_anime(anime_id, user_info, anime['list_status'])
         user_list_json = json.dumps(user_list['data'])
-        print(user_list_json)
+        print('Atualização concluida com sucesso!')
         return JsonResponse(user_list_json, safe=False)
     except Exception as e:
         print(e)
@@ -143,11 +139,10 @@ def atualizar_dados(request, username):
 def get_data_from_username(request, username): 
     try:
         user_list = get_user_list(username)
-        print(len(user_list))
         return JsonResponse(user_list, safe=False)
 
     except Exception as e:
-        print(e)
+        print('error', e)
         return JsonResponse({'error': 'Usuario nao encontrado na base de dados'}, status=400)
 
 def get_difference(request):

@@ -52,7 +52,9 @@ def check_and_add_anime(Anime_id, user_info, anime_from_list):
     try:
         anime = Anime.objects.get(id=Anime_id)
         try:
-            User_Anime.objects.get(user_id=User.objects.get(id=user_info['id']), anime_id=anime)
+            user_anime = User_Anime.objects.get(user_id=User.objects.get(id=user_info['id']), anime_id=anime)
+            #verificar se está atualizado
+            verify_user_anime(user_anime, anime_from_list)
             try:
                 anime_genres = Anime_Genre.objects.filter(anime=anime)
                 return anime
@@ -124,11 +126,24 @@ def add_User_Anime(anime, user_info, anime_from_list):
         anime_id=anime,
         status = anime_from_list['status'],
         score = anime_from_list['score'],
-        num_watched_episodes = anime_from_list['num_episodes_watched'],
+        num_episodes_watched = anime_from_list['num_episodes_watched'],
         start_date = start_date,
         finish_date = finish_date  
     )
     print(f'Anime {anime.title} adicionado à lista do usuário {user_info["name"]}.')
+
+def verify_user_anime(user_anime, anime_from_list):
+    attributes = ['status', 'score', 'num_episodes_watched', 'start_date', 'finish_date']
+    update = any(
+        getattr(user_anime, attr) != anime_from_list.get(attr)
+        for attr in attributes
+        if anime_from_list.get(attr) is not None)
+    if update:  
+        for attr in attributes:
+            if anime_from_list.get(attr)is not None:
+                setattr(user_anime, attr, anime_from_list[attr])
+        user_anime.save()
+    
 
 def get_user_list(username):
     #pegar os dados do user_anime e os titulos do anime
@@ -143,7 +158,7 @@ def get_user_list(username):
             'series_title': anime.title,
             'my_status': user_anime.status,
             'my_score': user_anime.score,
-            'num_watched_episodes': user_anime.num_watched_episodes,
+            'num_episodes_watched': user_anime.num_episodes_watched,
             'my_start_date': user_anime.start_date,
             'my_finish_date': user_anime.finish_date,
             'series_episodes': anime.num_episodes,

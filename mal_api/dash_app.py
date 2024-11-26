@@ -150,7 +150,7 @@ if 'df' in st.session_state:
     nota_maxima.metric("Nota Máxima", df_filtered['my_score'].max() if not pd.isnull(average_score) else 'Sem dados')
     nota_minima.metric("Nota Mínima", df_filtered[df_filtered['my_score'] != 0]['my_score'].min() if not pd.isnull(average_score) else 'Sem dados')
     nota_mediana.metric("Nota Mediana", df_filtered['my_score'].median() if not pd.isnull(average_score) else 'Sem dados')
-    episodios_assistidos.metric("episódios assistidos", df_filtered['num_watched_episodes'].sum())
+    episodios_assistidos.metric("episódios assistidos", df_filtered['num_episodes_watched'].sum())
     # endregion
 
     #region gráfico de barras da quantidade de séries por Nota
@@ -324,7 +324,7 @@ if 'df' in st.session_state:
     
     #region gráfico de barras do tempo gasto por nota e card 9 - tempo total gasto assistindo
     df_group_score = df_filtered.copy()
-    df_group_score['time_spent'] = (df_filtered['num_watched_episodes'] * df_filtered['average_episode_duration']) / 3600
+    df_group_score['time_spent'] = (df_filtered['num_episodes_watched'] * df_filtered['average_episode_duration']) / 3600
     df_group_score = df_group_score.groupby('my_score', as_index=False)['time_spent'].sum()
     fig_score_by_time_spent = go.Figure()
     fig_score_by_time_spent.add_trace(go.Bar(
@@ -444,35 +444,33 @@ if 'df' in st.session_state:
 
     #region linha temporal - completed series
     df_completion_month = df_filtered.copy()
+    df_completion_month = df_completion_month.dropna(subset=['my_finish_date'])
+    unique_years = sorted(set(df_completion_month['my_finish_date'].dt.year))
     df_completion_month['YearMonth'] = df_completion_month['my_finish_date'].dt.to_period('M')
-    df_completion_month['YearMonthGroup'] = df_completion_month['YearMonth'].apply( lambda x: 'Before 2015' if x.year <= 2015 else str(x) )
     df_completion_month = (
-        df_completion_month.groupby('YearMonthGroup')
+        df_completion_month.groupby('YearMonth')
         .size()
         .reset_index(name='count')
     )
-    df_completion_month = df_completion_month.sort_values('YearMonthGroup')
+    df_completion_month = df_completion_month.sort_values('YearMonth')
     df_completion_month['cumulative_count'] = df_completion_month['count'].cumsum()
-    df_completion_month['YearMonthGroup'] = df_completion_month['YearMonthGroup'].astype(str)
+    df_completion_month['YearMonth'] = df_completion_month['YearMonth'].astype(str)
 
     fig_timeline = go.Figure()
     fig_timeline.add_trace(go.Scatter(
-        x=df_completion_month['YearMonthGroup'],
+        x=df_completion_month['YearMonth'],
         y=df_completion_month['cumulative_count'],
         mode='lines+markers',
         name='Animes assistidos'
     ))
-    unique_years = sorted(set(df_filtered['my_finish_date'].dt.year))
-    unique_years.insert(0, 'Before 2015')
-
     fig_timeline.update_layout(
         title='Timeline de animes assistidos',
         xaxis_title='Mês/Ano',
         yaxis_title='Quantidade acumulada de animes',
         xaxis=dict(
             tickmode='array',
-            tickvals=['Before 2015'] + [f"{year}-01" for year in unique_years],
-            ticktext=['Before 2015'] + [str(year) for year in unique_years],
+            tickvals= [f"{year}-01" for year in unique_years ],
+            ticktext= [str(year) for year in unique_years ],
             tickangle=-45
         ),
         yaxis=dict(
@@ -489,7 +487,6 @@ if 'df' in st.session_state:
         )
     graph_timeline.plotly_chart(fig_timeline, use_container_width=True)
     #endregion
-    
     st.header('Tabela de Animes')
 
     st.write(df_filtered)
