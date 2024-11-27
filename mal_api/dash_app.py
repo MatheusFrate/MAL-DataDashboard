@@ -15,8 +15,14 @@ st.markdown("---")
 #region sidebar - api
 # Carregamento do dataset
 def enviar_requisicao(input_text):
-    print(input_text)
-    
+    st.markdown( 
+        f""" 
+            <h1>
+                <a href="https://myanimelist.net/profile/{input_text}" target="_blank" style="text-decoration: none; color: inherit;">
+                    Perfil: {input_text}
+                </a>
+            </h1> 
+        """, unsafe_allow_html=True )
     response = requests.get(f'http://localhost:8000/api/get_data/{input_text}')
     if response.status_code == 200:
         df = pd.DataFrame(response.json())
@@ -116,7 +122,13 @@ if 'df' in st.session_state:
         df_filtered = df_filtered.reset_index(drop=True)
     else:
         df_filtered = df_filtered[df_filtered['genres'].apply(lambda x: any(item in genres for item in x))].reset_index(drop=True)
-
+    
+    filtros = [ month if month != "Mostrar todos" else "", range_episodes if range_episodes != "Mostrar todos" else "", status if status != "Mostrar todos" else "", series_type if series_type != "Mostrar todos" else "", studios if studios != "Mostrar todos" else "",", ".join(genres) if genres and "Mostrar todos" not in genres else "" ]
+    if any(filtros): 
+        filtros_aplicados = f'filtros aplicados: {", ".join([filtro for filtro in filtros if filtro])}' 
+        st.subheader(filtros_aplicados) 
+    else: 
+        st.subheader("Nenhum filtro aplicado.")
     # endregion
 
     #  region Criação de colunas
@@ -154,7 +166,7 @@ if 'df' in st.session_state:
     # endregion
 
     #region gráfico de barras da quantidade de séries por Nota
-    df_group_score = df_filtered.groupby('my_score', as_index=False)['series_title'].count()
+    df_group_score = df_filtered.groupby('my_score', as_index=False, observed=True)['series_title'].count()
     fig_score = go.Figure()
     fig_score.add_trace(go.Bar(
         x=df_group_score['my_score'],
@@ -182,8 +194,8 @@ if 'df' in st.session_state:
     #endregion
 
     #region gráfico de barras da quantidade de series por faixa de episódios e a media de notas por faixa
-    df_group_episodes = df_filtered.groupby('episode_range', as_index=False)['series_title'].count()
-    df_avg_score_by_episodes = df_filtered[df_filtered['my_score'] != 0].groupby('episode_range', as_index=False)['my_score'].mean()
+    df_group_episodes = df_filtered.groupby('episode_range', as_index=False, observed=True)['series_title'].count()
+    df_avg_score_by_episodes = df_filtered[df_filtered['my_score'] != 0].groupby('episode_range', as_index=False, observed=True)['my_score'].mean()
 
     fig_episode_range = go.Figure()
     fig_episode_range.add_trace(go.Bar(
@@ -231,7 +243,7 @@ if 'df' in st.session_state:
     #endregion
 
     #region gráfico de pizza de quantidade de série por tipo
-    df_series_by_type = df_filtered.groupby('series_type')['series_title'].count()
+    df_series_by_type = df_filtered.groupby('series_type', observed=True)['series_title'].count()
 
     fig_series_by_type = px.pie(df_series_by_type, values='series_title', names=df_series_by_type.index, title='Quantidade de Séries por Tipo')
 
@@ -246,7 +258,7 @@ if 'df' in st.session_state:
     #endregion
 
     #region timeline de quantidade de series assistidas por ano e média das notas por ano 
-    df_series_by_year = df_filtered.groupby(df_filtered['my_finish_date'].dt.year)['series_title'].count()
+    df_series_by_year = df_filtered.groupby(df_filtered['my_finish_date'].dt.year, observed=True)['series_title'].count()
     df_avg_score_by_year = df_filtered[df_filtered['my_score'] != 0].groupby(df_filtered['my_finish_date'].dt.year)['my_score'].mean()
 
     fig_series_by_date = go.Figure()
@@ -286,7 +298,7 @@ if 'df' in st.session_state:
     #endregion
 
     #region gráfico donut de quantidade de series por status
-    df_series_status = df_filtered.groupby('my_status')['series_title'].count()
+    df_series_status = df_filtered.groupby('my_status', observed=True)['series_title'].count()
     fig_series_by_status = px.pie(
         df_series_status,
         values='series_title', 
@@ -304,7 +316,7 @@ if 'df' in st.session_state:
     #endregion
 
     #region gráfico de barras de média de notas por tipo de série
-    df_avg_score_by_type = df_filtered[df_filtered['my_score'] != 0].groupby('series_type', as_index=False)['my_score'].mean()
+    df_avg_score_by_type = df_filtered[df_filtered['my_score'] != 0].groupby('series_type', as_index=False, observed=True)['my_score'].mean()
     fig_date = px.bar(df_avg_score_by_type, x='series_type', y='my_score', title='Média de Nota por Tipo de Série')
     fig_date.update_layout(
         xaxis_title='Tipo de Série',
@@ -325,7 +337,7 @@ if 'df' in st.session_state:
     #region gráfico de barras do tempo gasto por nota e card 9 - tempo total gasto assistindo
     df_group_score = df_filtered.copy()
     df_group_score['time_spent'] = (df_filtered['num_episodes_watched'] * df_filtered['average_episode_duration']) / 3600
-    df_group_score = df_group_score.groupby('my_score', as_index=False)['time_spent'].sum()
+    df_group_score = df_group_score.groupby('my_score', as_index=False, observed=True)['time_spent'].sum()
     fig_score_by_time_spent = go.Figure()
     fig_score_by_time_spent.add_trace(go.Bar(
         x= df_group_score['my_score'],
@@ -360,7 +372,7 @@ if 'df' in st.session_state:
 
     #region gráfico donut de generos mais assistidos
     df_series_genre = df_filtered.explode('genres')
-    df_series_genre = df_series_genre.groupby('genres')['series_title'].count().sort_values(ascending=False).head(10)
+    df_series_genre = df_series_genre.groupby('genres', observed=True)['series_title'].count().sort_values(ascending=False).head(10)
 
     fig_series_by_genre = px.pie(
         df_series_genre,
@@ -393,7 +405,7 @@ if 'df' in st.session_state:
         lambda x: 'Sem data' if pd.isnull(x) else calendar.month_name[x.month] 
     )
 
-    df_completion_month = df_completion_month.groupby(['years', 'months']).size().reset_index(name='completed_count')
+    df_completion_month = df_completion_month.groupby(['years', 'months'], observed=True).size().reset_index(name='completed_count')
     df_completion_month['years'] = df_completion_month['years'].astype(int)
     if not df_completion_month.empty:
         
@@ -448,7 +460,7 @@ if 'df' in st.session_state:
     unique_years = sorted(set(df_completion_month['my_finish_date'].dt.year))
     df_completion_month['YearMonth'] = df_completion_month['my_finish_date'].dt.to_period('M')
     df_completion_month = (
-        df_completion_month.groupby('YearMonth')
+        df_completion_month.groupby('YearMonth', observed=True)
         .size()
         .reset_index(name='count')
     )
