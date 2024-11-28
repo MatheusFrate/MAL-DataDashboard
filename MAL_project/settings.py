@@ -29,7 +29,7 @@ DEBUG = True
 
 PORT = os.getenv('PORT')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'mal-datadashboard.onrender.com']
 
 
 # Application definition
