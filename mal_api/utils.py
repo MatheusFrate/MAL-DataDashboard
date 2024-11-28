@@ -17,23 +17,17 @@ def generate_code_challenge():
     code_challenge = secrets.token_urlsafe(64)
     return code_challenge 
 
-def get_data_from_mal_api(request, username, animelist, user_info):
+def get_data_from_mal_api(user_anime_list_url):
     user_token = User.objects.get(name='MFrate')
     user_token_info = get_user_info(user_token)
-    user_anime_list_url = f'https://api.myanimelist.net/v2/users/{username}/{animelist}'
     headers = {'Authorization': 'Bearer ' + user_token_info['access_token']}
     params = {'fields': 'list_status', 'nsfw': 'True'}
-    user_list = {'data': []}
-    count = 0
-    while user_anime_list_url:
-        count += 1
-        user_list_response = requests.get(user_anime_list_url, headers=headers, params=params)
-        if user_list_response.status_code != 200:
-            return user_list_response
-        user_list_data = user_list_response.json()
-        user_list['data'] += user_list_data['data']
-        user_anime_list_url = user_list_data['paging'].get('next')
-    return user_list
+    user_list_response = requests.get(user_anime_list_url, headers=headers, params=params)
+    if user_list_response.status_code != 200:
+        return user_list_response
+    user_list_data = user_list_response.json()
+    user_anime_list_url = user_list_data['paging'].get('next')
+    return user_list_data, user_anime_list_url
 
 def get_anime_data_from_mal(mal_id, user_info):
     user_token = User.objects.get(name='MFrate')
@@ -141,7 +135,12 @@ def verify_user_anime(user_anime, anime_from_list):
     if update:  
         for attr in attributes:
             if anime_from_list.get(attr)is not None:
-                setattr(user_anime, attr, anime_from_list[attr])
+                if attr == 'start_date' or attr == 'finish_date':
+                    try:
+                        date = datetime.strptime(anime_from_list[attr], '%Y-%m-%d').date()
+                        setattr(user_anime, attr, date)
+                    except:
+                        setattr(user_anime, attr, None)
         user_anime.save()
     
 

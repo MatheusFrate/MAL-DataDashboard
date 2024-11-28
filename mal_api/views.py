@@ -124,11 +124,15 @@ def atualizar_dados(request, username):
     try:
         user = User.objects.get(name=username)
         user_info = get_user_info(user)
-        user_list = get_data_from_mal_api(request, username, 'animelist', user_info)
-        for animes in user_list['data']:
-            anime = animes
-            anime_id = int(anime['node']['id'])
-            check_and_add_anime(anime_id, user_info, anime['list_status'])
+        user_anime_list_url = f'https://api.myanimelist.net/v2/users/{username}/animelist'
+        user_list_json = []
+        while user_anime_list_url:
+            user_list, user_anime_list_url = get_data_from_mal_api(user_anime_list_url)
+            for animes in user_list['data']:
+                anime = animes
+                anime_id = int(anime['node']['id'])
+                check_and_add_anime(anime_id, user_info, anime['list_status'])
+            user_list_json += user_list['data']
         user_list_json = json.dumps(user_list['data'])
         print('Atualização concluida com sucesso!')
         return JsonResponse(user_list_json, safe=False)
