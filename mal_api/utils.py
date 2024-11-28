@@ -100,7 +100,7 @@ def add_Anime(Anime_id, user_info):
             studio = anime_data['studios'][0]['name'] if anime_data['studios'] else None,
             source = anime_data['source']
         )
-        print(f'Anime {anime_data['title']} adicionado com sucesso.')
+        print(f"Anime {anime_data['title']} adicionado com sucesso.")
         return anime, anime_data
     else:
         print('Erro ao obter dados do anime na API do MAL.')
@@ -130,7 +130,7 @@ def add_User_Anime(anime, user_info, anime_from_list):
         start_date = start_date,
         finish_date = finish_date  
     )
-    print(f'Anime {anime.title} adicionado à lista do usuário {user_info["name"]}.')
+    print(f"Anime {anime.title} adicionado à lista do usuário {user_info['name']}.")
 
 def verify_user_anime(user_anime, anime_from_list):
     attributes = ['status', 'score', 'num_episodes_watched', 'start_date', 'finish_date']
