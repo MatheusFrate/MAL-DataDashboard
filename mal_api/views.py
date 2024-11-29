@@ -1,6 +1,6 @@
 from .serializer import AnimeSerializer, GenreSerializer, UserSerializer, User_AnimeSerializer, Anime_GenreSerializer
 from .utils import get_user_info, generate_code_challenge, get_data_from_mal_api, check_and_add_anime, get_user_list
-from .models import Anime, Genre, User, User_Anime, Anime_Genre
+from .models import Anime, Genre, User, User_Anime, Anime_Genre, AnimeList
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -141,9 +141,14 @@ def atualizar_dados(request, username):
         return JsonResponse({'error': 'Usuario nao encontrado na base de dados'}, status=400)
     
 def get_data_from_username(request, username): 
+
+    user = User.objects.get(name=username)
     try:
-        user_list = get_user_list(username)
-        return JsonResponse(user_list, safe=False)
+        user_list = AnimeList.objects.filter(user_id = user.id)
+        data = list(user_list.values(
+            'series_title', 'my_status', 'my_score', 'num_episodes_watched', 'my_start_date', 'my_finish_date', 'series_episodes', 'series_type', 'series_mean', 'series_source', 'series_studio', 'average_episode_duration', 'genres' 
+        ))
+        return JsonResponse(data, safe=False)
 
     except Exception as e:
         print('error', e)

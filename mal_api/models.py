@@ -107,3 +107,24 @@ class Anime_Genre(models.Model):
     def __str__(self):
         return f'{self.anime.title} - {self.genre.name}'
     
+
+class AnimeList(models.Model):
+    id = models.AutoField(primary_key=True)
+    series_title = models.CharField(max_length=255)
+    my_status = models.CharField(max_length=255)
+    my_score = models.IntegerField()
+    num_episodes_watched = models.IntegerField()
+    my_start_date = models.DateField(null=True, blank=True)
+    my_finish_date = models.DateField(null=True, blank=True)
+    series_episodes = models.IntegerField()
+    series_type = models.CharField(max_length=255)
+    series_mean = models.FloatField()
+    series_source = models.CharField(max_length=255)
+    series_studio = models.CharField(max_length=255)
+    average_episode_duration = models.IntegerField()
+    genres = models.CharField(max_length=500)
+    user_id = models.IntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'anime_list'
