@@ -45,28 +45,6 @@ def get_anime_data_from_mal(mal_id, user_info):
 def check_and_add_anime(Anime_id, user_info, anime_from_list):
     try:
         anime = Anime.objects.get(id=Anime_id)
-        try:
-            user_anime = User_Anime.objects.get(user_id=User.objects.get(id=user_info['id']), anime_id=anime)
-            #verificar se está atualizado
-            verify_user_anime(user_anime, anime_from_list)
-            try:
-                anime_genres = Anime_Genre.objects.filter(anime=anime)
-                return anime
-
-            except Anime_Genre.DoesNotExist:
-                anime_data = get_anime_data_from_mal(Anime_id, user_info)
-                try:
-                    anime_genres = anime_data['genres']
-                    for genre in anime_genres:
-                        genre_obj, created = Genre.objects.get_or_create(id=genre['id'])
-                        Anime_Genre.objects.create(anime=anime, genre=genre_obj)
-                except KeyError:
-                    pass
-
-        except User_Anime.DoesNotExist:
-            add_User_Anime(anime, user_info, anime_from_list)
-        return anime
-    
     except Anime.DoesNotExist:
         anime, anime_data = add_Anime(Anime_id, user_info)
         add_User_Anime(anime, user_info, anime_from_list)
@@ -78,6 +56,26 @@ def check_and_add_anime(Anime_id, user_info, anime_from_list):
         except KeyError:
             pass
         return anime
+
+    try:
+        user_anime = User_Anime.objects.get(user_id=user_info['id'], anime_id=anime)
+        verify_user_anime(user_anime, anime_from_list)
+    except User_Anime.DoesNotExist:
+        add_User_Anime(anime, user_info, anime_from_list)
+
+    try:
+        anime_genres = Anime_Genre.objects.filter(anime=anime)
+        return anime
+    except Anime_Genre.DoesNotExist:
+        anime_data = get_anime_data_from_mal(Anime_id, user_info)
+        try:
+            anime_genres = anime_data['genres']
+            for genre in anime_genres:
+                genre_obj, created = Genre.objects.get_or_create(id=genre['id'])
+                Anime_Genre.objects.create(anime=anime, genre=genre_obj)
+        except KeyError:
+            pass
+
    
 def add_Anime(Anime_id, user_info):
     anime_data = get_anime_data_from_mal(Anime_id, user_info)

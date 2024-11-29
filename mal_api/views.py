@@ -6,6 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from rest_framework import viewsets
+from django.db import transaction
 from django.conf import settings
 from datetime import datetime
 import pandas as pd
@@ -127,15 +128,15 @@ def atualizar_dados(request, username):
         user_anime_list_url = f'https://api.myanimelist.net/v2/users/{username}/animelist'
         user_list_json = []
         while user_anime_list_url:
-            user_list, user_anime_list_url = get_data_from_mal_api(user_anime_list_url)
-            for animes in user_list['data']:
-                anime = animes
-                anime_id = int(anime['node']['id'])
-                check_and_add_anime(anime_id, user_info, anime['list_status'])
-            user_list_json += user_list['data']
-        user_list_json = json.dumps(user_list['data'])
+            user_list, user_anime_list_url = get_data_from_mal_api(user_anime_list_url) 
+            
+            with transaction.atomic():
+                for anime in user_list['data']:
+                    anime_id = int(anime['node']['id'])
+                    check_and_add_anime(anime_id, user_info, anime['list_status'])
+        
         print('Atualização concluida com sucesso!')
-        return JsonResponse(user_list_json, safe=False)
+        return JsonResponse({'message': 'Atualização concluída com sucesso!'}, status=200)
     except Exception as e:
         print(e)
         return JsonResponse({'error': 'Usuario nao encontrado na base de dados'}, status=400)
