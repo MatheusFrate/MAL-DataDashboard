@@ -1,5 +1,5 @@
 from .serializer import AnimeSerializer, GenreSerializer, UserSerializer, User_AnimeSerializer, Anime_GenreSerializer
-from .utils import get_user_info, generate_code_challenge, get_data_from_mal_api, check_and_add_anime, get_user_list
+from .utils import get_user_info, generate_code_challenge, get_data_from_mal_api, check_and_add_anime
 from .models import Anime, Genre, User, User_Anime, Anime_Genre, AnimeList
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
@@ -126,7 +126,6 @@ def atualizar_dados(request, username):
         user = User.objects.get(name=username)
         user_info = get_user_info(user)
         user_anime_list_url = f'https://api.myanimelist.net/v2/users/{username}/animelist'
-        user_list_json = []
         while user_anime_list_url:
             user_list, user_anime_list_url = get_data_from_mal_api(user_anime_list_url) 
             
@@ -134,7 +133,6 @@ def atualizar_dados(request, username):
                 for anime in user_list['data']:
                     anime_id = int(anime['node']['id'])
                     check_and_add_anime(anime_id, user_info, anime['list_status'])
-        
         print('Atualização concluida com sucesso!')
         return JsonResponse({'message': 'Atualização concluída com sucesso!'}, status=200)
     except Exception as e:
@@ -142,9 +140,14 @@ def atualizar_dados(request, username):
         return JsonResponse({'error': 'Usuario nao encontrado na base de dados'}, status=400)
     
 def get_data_from_username(request, username): 
-
-    user = User.objects.get(name=username)
     try:
+        username = username.lower()
+        print(username)
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': 'digite o nome do usuario'})
+    try:
+        user = User.objects.get(name=username)
         user_list = AnimeList.objects.filter(user_id = user.id)
         data = list(user_list.values(
             'series_title', 'my_status', 'my_score', 'num_episodes_watched', 'my_start_date', 'my_finish_date', 'series_episodes', 'series_type', 'series_mean', 'series_source', 'series_studio', 'average_episode_duration', 'genres' 
@@ -154,16 +157,3 @@ def get_data_from_username(request, username):
     except Exception as e:
         print('error', e)
         return JsonResponse({'error': 'Usuario nao encontrado na base de dados'}, status=400)
-
-def get_difference(request):
-    user = request.user
-    user_info = get_user_info(user)
-    user_list = get_user_list(user_info['name'])
-    df = pd.DataFrame(user_list)
-
-    caminho_csv = os.path.join(settings.BASE_DIR, 'mal_api', 'dados', 'animes_frate.csv')
-    df_export = pd.read_csv(caminho_csv, delimiter=';')
-
-    diff_df = df_export.merge(df, on='series_title', how='left', indicator=True) 
-    only_in_df1 = diff_df[diff_df['_merge'] == 'left_only']['series_title'] # Exibir os valores que estão apenas em df1 print
-    print(only_in_df1.tolist())

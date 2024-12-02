@@ -75,7 +75,6 @@ def check_and_add_anime(Anime_id, user_info, anime_from_list):
                 Anime_Genre.objects.create(anime=anime, genre=genre_obj)
         except KeyError:
             pass
-
    
 def add_Anime(Anime_id, user_info):
     anime_data = get_anime_data_from_mal(Anime_id, user_info)
@@ -113,7 +112,7 @@ def add_User_Anime(anime, user_info, anime_from_list):
             finish_date = None
     else:
         finish_date = None
-    user_anime = User_Anime.objects.create(
+    User_Anime.objects.create(
         user_id= User.objects.get(id=user_info['id']),
         anime_id=anime,
         status = anime_from_list['status'],
@@ -142,29 +141,30 @@ def verify_user_anime(user_anime, anime_from_list):
         user_anime.save()
     
 
-def get_user_list(username):
-    #pegar os dados do user_anime e os titulos do anime
-    user = User.objects.get(name=username)
-    user_info = get_user_info(user)
-    user_list = []
-    user_anime_list = User_Anime.objects.filter(user_id=user_info['id'])
-    for user_anime in user_anime_list:
-        anime = Anime.objects.get(id=user_anime.anime_id.id)
-        anime_genre_list = Anime_Genre.objects.filter(anime=anime)
-        user_list.append({
-            'series_title': anime.title,
-            'my_status': user_anime.status,
-            'my_score': user_anime.score,
-            'num_episodes_watched': user_anime.num_episodes_watched,
-            'my_start_date': user_anime.start_date,
-            'my_finish_date': user_anime.finish_date,
-            'series_episodes': anime.num_episodes,
-            'series_type': anime.media_type,
-            'series_mean': anime.mean,
-            'series_source': anime.source,
-            'series_studio': anime.studio,
-            'average_episode_duration': anime.average_episode_duration,
-            'genres': [genre.genre.name for genre in anime_genre_list]
+# def get_user_list(username):
+#     #pegar os dados do user_anime e os titulos do anime
+#     user = User.objects.get(name=username)
+#     user_info = get_user_info(user)
+#     user_list = []
+#     user_anime_list = User_Anime.objects.filter(user_id=user_info['id'])
+#     for user_anime in user_anime_list:
+#         anime = Anime.objects.get(id=user_anime.anime_id.id)
+#         anime_genre_list = Anime_Genre.objects.filter(anime=anime)
+#         user_list.append({
+#             'series_title': anime.title,
+#             'my_status': user_anime.status,
+#             'my_score': user_anime.score,
+#             'num_episodes_watched': user_anime.num_episodes_watched,
+#             'my_start_date': user_anime.start_date,
+#             'my_finish_date': user_anime.finish_date,
+#             'series_episodes': anime.num_episodes,
+#             'series_type': anime.media_type,
+#             'series_mean': anime.mean,
+#             'series_source': anime.source,
+#             'series_studio': anime.studio,
+#             'average_episode_duration': anime.average_episode_duration,
+#             'genres': [genre.genre.name for genre in anime_genre_list]
 
-        })
-    return user_list
+#         })
+#     print(user_list)
+#     return user_list
