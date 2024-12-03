@@ -123,6 +123,11 @@ def atualizar_dados(request, username):
     print('Atualizando dados...', username)
     print('='*100)
     try:
+        username = username.lower()
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': 'digite o nome do usuario'})
+    try:
         user = User.objects.get(name=username)
         user_info = get_user_info(user)
         user_anime_list_url = f'https://api.myanimelist.net/v2/users/{username}/animelist'
@@ -142,7 +147,6 @@ def atualizar_dados(request, username):
 def get_data_from_username(request, username): 
     try:
         username = username.lower()
-        print(username)
     except Exception as e:
         print(e)
         return JsonResponse({'error': 'digite o nome do usuario'})

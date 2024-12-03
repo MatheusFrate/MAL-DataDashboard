@@ -18,7 +18,7 @@ def generate_code_challenge():
     return code_challenge 
 
 def get_data_from_mal_api(user_anime_list_url):
-    user_token = User.objects.get(name='MFrate')
+    user_token = User.objects.get(name='mfrate')
     user_token_info = get_user_info(user_token)
     headers = {'Authorization': 'Bearer ' + user_token_info['access_token']}
     params = {'fields': 'list_status', 'nsfw': 'True'}
@@ -29,8 +29,8 @@ def get_data_from_mal_api(user_anime_list_url):
     user_anime_list_url = user_list_data['paging'].get('next')
     return user_list_data, user_anime_list_url
 
-def get_anime_data_from_mal(mal_id, user_info):
-    user_token = User.objects.get(name='MFrate')
+def get_anime_data_from_mal(mal_id):
+    user_token = User.objects.get(name='mfrate')
     user_token_info = get_user_info(user_token)
     url = f'https://api.myanimelist.net/v2/anime/{mal_id}'
     headers = {'Authorization': 'Bearer ' + user_token_info['access_token']}
@@ -46,7 +46,7 @@ def check_and_add_anime(Anime_id, user_info, anime_from_list):
     try:
         anime = Anime.objects.get(id=Anime_id)
     except Anime.DoesNotExist:
-        anime, anime_data = add_Anime(Anime_id, user_info)
+        anime, anime_data = add_Anime(Anime_id)
         add_User_Anime(anime, user_info, anime_from_list)
         try:
             anime_genres = anime_data['genres']
@@ -67,7 +67,7 @@ def check_and_add_anime(Anime_id, user_info, anime_from_list):
         anime_genres = Anime_Genre.objects.filter(anime=anime)
         return anime
     except Anime_Genre.DoesNotExist:
-        anime_data = get_anime_data_from_mal(Anime_id, user_info)
+        anime_data = get_anime_data_from_mal(Anime_id)
         try:
             anime_genres = anime_data['genres']
             for genre in anime_genres:
@@ -76,8 +76,8 @@ def check_and_add_anime(Anime_id, user_info, anime_from_list):
         except KeyError:
             pass
    
-def add_Anime(Anime_id, user_info):
-    anime_data = get_anime_data_from_mal(Anime_id, user_info)
+def add_Anime(Anime_id):
+    anime_data = get_anime_data_from_mal(Anime_id)
     if anime_data:
         if '"' in anime_data['title']:
             anime_data['title'] = anime_data['title'].replace('"', '')
@@ -138,33 +138,7 @@ def verify_user_anime(user_anime, anime_from_list):
                         setattr(user_anime, attr, date)
                     except:
                         setattr(user_anime, attr, None)
+                else:
+                     setattr(user_anime, attr, anime_from_list.get(attr))
         user_anime.save()
     
-
-# def get_user_list(username):
-#     #pegar os dados do user_anime e os titulos do anime
-#     user = User.objects.get(name=username)
-#     user_info = get_user_info(user)
-#     user_list = []
-#     user_anime_list = User_Anime.objects.filter(user_id=user_info['id'])
-#     for user_anime in user_anime_list:
-#         anime = Anime.objects.get(id=user_anime.anime_id.id)
-#         anime_genre_list = Anime_Genre.objects.filter(anime=anime)
-#         user_list.append({
-#             'series_title': anime.title,
-#             'my_status': user_anime.status,
-#             'my_score': user_anime.score,
-#             'num_episodes_watched': user_anime.num_episodes_watched,
-#             'my_start_date': user_anime.start_date,
-#             'my_finish_date': user_anime.finish_date,
-#             'series_episodes': anime.num_episodes,
-#             'series_type': anime.media_type,
-#             'series_mean': anime.mean,
-#             'series_source': anime.source,
-#             'series_studio': anime.studio,
-#             'average_episode_duration': anime.average_episode_duration,
-#             'genres': [genre.genre.name for genre in anime_genre_list]
-
-#         })
-#     print(user_list)
-#     return user_list
