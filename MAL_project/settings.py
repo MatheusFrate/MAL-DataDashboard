@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'dpd_static_support',
     'channels',
     'channels_redis',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [

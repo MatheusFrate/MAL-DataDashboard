@@ -74,7 +74,7 @@ class Anime(models.Model):
     num_episodes = models.IntegerField()
     average_episode_duration = models.FloatField()
     studio = models.CharField(max_length=100, null=True, blank=True)
-    source = models.CharField(max_length=100)
+    source = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.title

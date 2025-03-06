@@ -89,7 +89,7 @@ def add_Anime(Anime_id):
             num_episodes = anime_data['num_episodes'],
             average_episode_duration = anime_data['average_episode_duration'],
             studio = anime_data['studios'][0]['name'] if anime_data['studios'] else None,
-            source = anime_data['source']
+            source = anime_data['source'] if 'source' in anime_data else None
         )
         print(f"Anime {anime_data['title']} adicionado com sucesso.")
         return anime, anime_data

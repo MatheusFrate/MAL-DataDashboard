@@ -2,19 +2,17 @@ from .serializer import AnimeSerializer, GenreSerializer, UserSerializer, User_A
 from .utils import get_user_info, generate_code_challenge, get_data_from_mal_api, check_and_add_anime
 from .models import Anime, Genre, User, User_Anime, Anime_Genre, AnimeList
 from django.contrib.auth.decorators import login_required
+from rest_framework.decorators import api_view
 from django.http import HttpResponse, JsonResponse
+from drf_yasg.utils import swagger_auto_schema
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from rest_framework import viewsets
 from django.db import transaction
-from django.conf import settings
 from datetime import datetime
-import pandas as pd
 import urllib.parse
 import requests
-import json
 import os
-# Create your views here.
 
 class AnimeViewSet(viewsets.ModelViewSet):
     queryset = Anime.objects.all()
@@ -112,13 +110,20 @@ def my_animelist_callback(request):
     else:
         return HttpResponse('Erro ao realizar login')
     
-# tela inicial
+# tela que mostra dados do usuario logado
 @login_required
 def me(request):
     user = request.user
     user_info = get_user_info(user)
     return render(request, 'me.html', {'user_info': user_info})
 
+#Atualiza os dados da base de dados, recebendo da API do MyAnimeList
+@swagger_auto_schema(
+    method='get',
+    operation_description="Atualiza os dados de um usuário.",
+    responses={200: 'Dados atualizados com sucesso.', 400: 'Erro na atualização.'},
+)
+@api_view(['GET'])
 def atualizar_dados(request, username):
     print('Atualizando dados...', username)
     print('='*100)
@@ -143,7 +148,15 @@ def atualizar_dados(request, username):
     except Exception as e:
         print(e)
         return JsonResponse({'error': 'Usuario nao encontrado na base de dados'}, status=400)
-    
+
+#retorna os dados do usuário apartir de uma view 
+@swagger_auto_schema(
+    method='get',
+    operation_description="Busca os dados do usuário.",
+    responses={200: 'Dados buscados com sucesso.', 400: 'Erro na busca.'},
+    security=[]
+) 
+@api_view(['GET'])
 def get_data_from_username(request, username): 
     try:
         username = username.lower()
