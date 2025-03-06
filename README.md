@@ -1,10 +1,12 @@
 ## iniciar o sistema:
 1. acesse a pasta MAL_project
-2. veja se a configuração de start do Start_servers.py está correta
-3. executar o comando ```python start_servers.py```
-4. e é para ter iniciado tanto o streamlit quanto o django 🙏
+2. Para rodar o servidor django utilize o comando ``` python manage.py runserver```
+3. e é para ter iniciado o django 🙏
 
-   obs. não esqueça de ver se tem .env e se está configurado 
+obs. não esqueça de ver se tem .env e se está configurado 
+## Iniciar a interface gráfica
+Para a interface gráfica utilizei a biblioteca Streamlit no repositório https://github.com/MatheusFrate/Dashboard_streamlit
+
 
 
 ## exemplo de dashboard gerado:
