@@ -3,3 +3,4 @@ __pycache__/
 dash_streamlit.py
 /streamlit_pages
 start_server.py
+staticfiles

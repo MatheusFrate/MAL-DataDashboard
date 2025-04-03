@@ -1,5 +1,5 @@
 from .serializer import AnimeSerializer, GenreSerializer, UserSerializer, User_AnimeSerializer, Anime_GenreSerializer
-from .utils import get_user_info, generate_code_challenge, get_data_from_mal_api, check_and_add_anime
+from .utils import get_user_info, generate_code_challenge, get_data_from_mal_api, check_and_add_anime, get_anime_data_from_mal
 from .models import Anime, Genre, User, User_Anime, Anime_Genre, AnimeList
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
@@ -81,11 +81,11 @@ def my_animelist_callback(request):
 
         joined_at_str = user_info['joined_at']
         joined_at = datetime.strptime(joined_at_str, '%Y-%m-%dT%H:%M:%S%z').date() if joined_at_str else None
-
+        name = str(user_info['name']).lower()
         user, created = User.objects.get_or_create(
             id=user_info['id'],
             defaults={
-                'name': user_info['name'],
+                'name': name,
                 'gender': user_info['gender'],
                 'joined_at': joined_at,
                 'picture': user_info['picture'],
@@ -95,7 +95,7 @@ def my_animelist_callback(request):
         )
 
         if not created:
-            user.name = user_info['name']
+            user.name = name
             user.gender = user_info['gender']
             user.joined_at = joined_at
             user.picture = user_info['picture']
@@ -174,3 +174,23 @@ def get_data_from_username(request, username):
     except Exception as e:
         print('error', e)
         return JsonResponse({'error': 'Usuario nao encontrado na base de dados'}, status=400)
+
+
+@swagger_auto_schema(
+    method='get',
+    operation_description="Busca os dados do anime na API do MAL.",
+    responses={200: 'Dados buscados com sucesso.', 400: 'Erro na busca.'},
+    security=[]
+) 
+@api_view(['GET'])
+def get_anime_data(request):
+    anime_titles = request.query_params.getlist('names', None)
+    capas = []
+    for i in anime_titles:
+        i = i.strip(" '[]\"")
+        if i[0] == ' ':
+            i = i[1:]
+        anime = Anime.objects.get(title=i)
+        data = get_anime_data_from_mal(anime.id)
+        capas.append(data['main_picture']['medium'])
+    return JsonResponse(capas, safe=False)
