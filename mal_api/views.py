@@ -190,7 +190,7 @@ def get_anime_data(request):
         i = i.strip(" '[]\"")
         if i[0] == ' ':
             i = i[1:]
-        anime = Anime.objects.get(title=i)
+        anime = Anime.objects.filter(title__icontains=i).first()
         data = get_anime_data_from_mal(anime.id)
         capas.append(data['main_picture']['medium'])
     return JsonResponse(capas, safe=False)
